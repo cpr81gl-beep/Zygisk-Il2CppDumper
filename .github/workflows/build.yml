@@ -1,28 +1,39 @@
-name: Build
+name: Build Zygisk-Il2CppDumper
+
 on:
   workflow_dispatch:
-      inputs:
-        package_name:
-          description: "Package name of the game:"
-          required: true
+    inputs:
+      package_name:
+        description: "Package name of the game:"
+        required: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-java@v4
-      with:
-        distribution: temurin
-        java-version: 11
-        cache: gradle
-    - run: |
-        chmod +x ./gradlew
-        sed -i 's/moduleDescription = "/moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
-        sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
-        sed -i 's|/data/data/|/sdcard/Android/data/com.vnggames.cfl.crossfirelegends/files/|g' module/src/main/cpp/main.cpp
-        ./gradlew :module:assembleRelease
-    - uses: actions/upload-artifact@v4
-      with:
-        name: zygisk-il2cppdumper
-        path: out/magisk_module_release/
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: 'bmax121/APKKiller-Il2CppDumper' # Bản fork chuyên giải mã game Tencent/Ace
+          
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: gradle
+
+      - name: Configure Game Package & Path
+        run: |
+          chmod +x ./gradlew
+          sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
+          sed -i 's|/data/data/|/sdcard/Android/data/${{ github.event.inputs.package_name }}/files/|g' module/src/main/cpp/main.cpp
+
+      - name: Build with Gradle
+        run: ./gradlew :module:assembleRelease
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zygisk-il2cppdumper-fixed
+          path: out/magisk_module_release/

@@ -20,7 +20,7 @@ jobs:
         chmod +x ./gradlew
         sed -i 's/moduleDescription = "/moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
         sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
-        sed -i 's|/data/data/|/sdcard/Download/|g' template/src/main/jni/main.cpp
+        sed -i 's|/data/data/|/sdcard/Download/|g' template/src/main/jni/main.h
         ./gradlew :module:assembleRelease
     - uses: actions/upload-artifact@v4
       with:
